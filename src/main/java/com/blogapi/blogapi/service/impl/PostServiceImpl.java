@@ -1,6 +1,7 @@
 package com.blogapi.blogapi.service.impl;
 
 import com.blogapi.blogapi.dto.PostDto;
+import com.blogapi.blogapi.exception.ResourceNotFoundException;
 import com.blogapi.blogapi.model.Post;
 import com.blogapi.blogapi.repository.PostRepository;
 import com.blogapi.blogapi.service.PostService;
@@ -40,6 +41,23 @@ public class PostServiceImpl implements PostService {
 //        }
         return posts.stream().map(post -> convertToDTO(post)).collect(Collectors.toList());
 
+    }
+
+    @Override
+    public PostDto getPost(long id){
+        Post post = postRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Post","id",id));
+        return convertToDTO(post);
+    }
+
+    @Override
+    public PostDto updatePost(PostDto postDto, long id){
+        Post post = postRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Post","id",id));
+        post.setTitle(postDto.getTitle());
+        post.setDescription(postDto.getDescription());
+        post.setContent(postDto.getContent());
+
+        Post updatedPost = postRepository.save(post);
+        return convertToDTO(updatedPost);
     }
 
     private PostDto convertToDTO(Post post){

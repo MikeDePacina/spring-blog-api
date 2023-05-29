@@ -29,4 +29,16 @@ public class PostController {
         return postService.getAllPosts();
     }
 
+    //get post by id
+    @GetMapping("/{id}")
+    public ResponseEntity<PostDto> getPost(@PathVariable(name = "id") long id){
+        return ResponseEntity.ok(postService.getPost(id));
+    }
+
+    //update post by id
+    @PutMapping("/{id}")
+    public ResponseEntity<PostDto> updatePost(@RequestBody PostDto postDto,@PathVariable(name = "id") long id){
+        return new ResponseEntity<PostDto>(postService.updatePost(postDto, id),HttpStatus.OK);
+    }
+
 }
