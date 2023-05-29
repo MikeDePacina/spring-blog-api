@@ -1,13 +1,17 @@
 package com.blogapi.blogapi.service.impl;
 
 import com.blogapi.blogapi.dto.PostDto;
+import com.blogapi.blogapi.dto.PostResponse;
 import com.blogapi.blogapi.exception.ResourceNotFoundException;
 import com.blogapi.blogapi.model.Post;
 import com.blogapi.blogapi.repository.PostRepository;
 import com.blogapi.blogapi.service.PostService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,13 +37,42 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostDto> getAllPosts(){
-        List<Post> posts = postRepository.findAll();
-//        List<PostDto> postDtos = new ArrayList<>();
-//        for(Post post: posts){
-//            postDtos.add(convertToDTO(post));
-//        }
-        return posts.stream().map(post -> convertToDTO(post)).collect(Collectors.toList());
+    public PostResponse getAllPosts(int pageNo, int pageSize, String sortBy, String sortOrder){
+
+//        pagination should also return the following(all of which pageable instance provides getters for):
+//        - List<Post> content
+//        - pageNo
+//        - pageSize
+//        - totalElements
+//        - totalPages
+//        - last
+
+        //create sorting instance with specified order
+        Sort sort = sortOrder.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        //pageable instance
+        Pageable pageable = PageRequest.of(pageNo,pageSize, sort);
+
+        Page<Post> posts = postRepository.findAll(pageable);
+
+        //getting posts in a page
+        List<Post> postsInPage = posts.getContent();
+
+        List<PostDto> content = postsInPage.stream().map(post -> convertToDTO(post)).collect(Collectors.toList());
+        PostResponse postResponse = new PostResponse();
+        postResponse.setContent(content);
+
+        //gets page number
+        postResponse.setPageNo(posts.getNumber());
+
+        //gets page size
+        postResponse.setPageSize(posts.getSize());
+        postResponse.setTotalElements(posts.getTotalElements());
+        postResponse.setTotalPages(posts.getTotalPages());
+        postResponse.setLast(posts.isLast());
+
+        return postResponse;
 
     }
 
@@ -58,6 +91,13 @@ public class PostServiceImpl implements PostService {
 
         Post updatedPost = postRepository.save(post);
         return convertToDTO(updatedPost);
+    }
+
+    @Override
+    public void deletePost(long id) {
+        Post post = postRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Post","id",id));
+        postRepository.delete(post);
+
     }
 
     private PostDto convertToDTO(Post post){
