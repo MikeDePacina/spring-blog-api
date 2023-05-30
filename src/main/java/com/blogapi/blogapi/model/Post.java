@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Data //lombok annotation creates getters and setters
 @AllArgsConstructor // creates a constructor with all the properties as parameters
 @NoArgsConstructor//creates a no parameter constructor
@@ -21,12 +24,15 @@ public class Post {
     )
     private long id;
 
-    @Column(name = "title",nullable = false)
+    @Column(name = "title",nullable = false)//if you don't specify name default will be the field
     private String title;
 
-    @Column(name = "description", nullable = false )
+    @Column(nullable = false )
     private String description;
 
-    @Column(name = "content", nullable = false)
+    @Column(nullable = false)
     private String content;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)//orphan removal deletes child entities in database when parent is removed
+    private Set<Comment> comments = new HashSet<>();
 }
