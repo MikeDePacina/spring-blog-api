@@ -30,7 +30,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = convertToModel(commentDto);
 
         //get post with specified ID
-        Post post = postRepository.findById(postID).orElseThrow(() -> new ResourceNotFoundException("Post","id",postID));
+        Post post = getPostByID(postID);
         comment.setPost(post);
 
         Comment newComment = commentRepository.save(comment);
@@ -49,9 +49,8 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDto getCommentByID(long postID,long commentID) {
-        Post post = postRepository.findById(postID).orElseThrow(() -> new ResourceNotFoundException("Post","id",postID));
-        Comment comment = commentRepository.findById(commentID).orElseThrow(()-> new ResourceNotFoundException("Comment","id",commentID));
-
+        Post post = getPostByID(postID);
+        Comment comment = getCommentByID(commentID);
         if(comment.getPost().getId() != (post.getId()))
             throw new BlogAPIException(HttpStatus.BAD_REQUEST,"Comment does not exists");
         return convertToDTO(comment);
@@ -59,8 +58,8 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDto updateCommentByID(long postID, long commentID, CommentDto commentDto) {
-        Post post = postRepository.findById(postID).orElseThrow(() -> new ResourceNotFoundException("Post","id",postID));
-        Comment comment = commentRepository.findById(commentID).orElseThrow(()-> new ResourceNotFoundException("Comment","id",commentID));
+        Post post = getPostByID(postID);
+        Comment comment = getCommentByID(commentID);
         if(comment.getPost().getId() != (post.getId()))
             throw new BlogAPIException(HttpStatus.BAD_REQUEST,"Comment does not exists");
 
@@ -71,6 +70,16 @@ public class CommentServiceImpl implements CommentService {
         Comment updatedComment = commentRepository.save(comment);
 
         return convertToDTO(updatedComment);
+    }
+
+    @Override
+    public void deleteComment(long postID, long commentID) {
+        Post post = getPostByID(postID);
+        Comment comment = getCommentByID(commentID);
+        if(comment.getPost().getId() != (post.getId()))
+            throw new BlogAPIException(HttpStatus.BAD_REQUEST,"Comment does not exists");
+
+        commentRepository.delete(comment);
     }
 
     private CommentDto convertToDTO(Comment comment){
@@ -89,6 +98,16 @@ public class CommentServiceImpl implements CommentService {
         comment.setEmail(commentDto.getEmail());
         comment.setBody(commentDto.getBody());
 
+        return comment;
+    }
+
+    private Post getPostByID(long postID){
+        Post post = postRepository.findById(postID).orElseThrow(() -> new ResourceNotFoundException("Post","id",postID));
+        return post;
+    }
+
+    private Comment getCommentByID(long commentID){
+        Comment comment = commentRepository.findById(commentID).orElseThrow(()-> new ResourceNotFoundException("Comment","id",commentID));
         return comment;
     }
 }
