@@ -1,14 +1,14 @@
 package com.blogapi.blogapi.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
-@Data //lombok annotation creates getters and setters
+//@Data lombok annotation creates getters and setters, toString, equals
+@Getter
+@Setter
 @AllArgsConstructor // creates a constructor with all the properties as parameters
 @NoArgsConstructor//creates a no parameter constructor
 
